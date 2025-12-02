@@ -1,2 +1,4 @@
 com\example\translator\Translator.class
+com\example\translator\TranslateServlet.class
+com\example\translator\WebServer.class
 com\example\translator\Main.class
