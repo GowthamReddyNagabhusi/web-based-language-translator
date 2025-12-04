@@ -16,7 +16,8 @@ public class WebServer {
 
         // ---- STATIC FILES SETUP ----
         // Load files from resources/webapp
-        handler.setResourceBase(WebServer.class.getClassLoader().getResource("webapp").toExternalForm());
+        String resourceBase = WebServer.class.getClassLoader().getResource("webapp").toExternalForm();
+        handler.setResourceBase(resourceBase);
         handler.addServlet(DefaultServlet.class, "/");
 
         // ---- API ENDPOINT ----
@@ -24,7 +25,11 @@ public class WebServer {
 
         server.setHandler(handler);
 
-        System.out.println("Server running at http://localhost:8080");
+        System.out.println("========================================");
+        System.out.println("🚀 Translation Server Started!");
+        System.out.println("📍 Open http://localhost:8080 in your browser");
+        System.out.println("========================================");
+
         server.start();
         server.join();
     }

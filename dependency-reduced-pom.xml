@@ -7,16 +7,16 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>3.1.0</version>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
         <configuration>
-          <mainClass>com.example.translator.WebServer</mainClass>
+          <source>17</source>
+          <target>17</target>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.4.1</version>
+        <version>3.5.0</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -33,6 +33,14 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <mainClass>com.example.translator.WebServer</mainClass>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
@@ -44,6 +52,7 @@
     </dependency>
   </dependencies>
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>17</maven.compiler.target>
     <maven.compiler.source>17</maven.compiler.source>
   </properties>

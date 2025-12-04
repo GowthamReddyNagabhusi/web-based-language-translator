@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Translator — History</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-left">
+      <a class="brand" href="index.html">🌐 Translator</a>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="history.html" class="active">History</a>
+        <a href="about.html">About</a>
+      </nav>
+    </div>
+    <div class="nav-right">
+      <input id="searchInput" placeholder="Search history..." />
+      <select id="filterLang">
+        <option value="">All languages</option>
+        <option value="fr">French</option>
+        <option value="es">Spanish</option>
+        <option value="de">German</option>
+        <option value="hi">Hindi</option>
+        <option value="ja">Japanese</option>
+        <option value="zh">Chinese</option>
+        <option value="it">Italian</option>
+        <option value="te">Telugu</option>
+      </select>
+      <button id="clearAllBtn" class="btn">Clear All</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="history-grid" id="historyGrid">
+      <!-- Cards inserted here by history.js -->
+    </section>
+  </main>
+
+  <script type="module" src="history.js"></script>
+</body>
+</html>

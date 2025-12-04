@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Translator — About</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-left">
+      <a class="brand" href="index.html">🌐 Translator</a>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="history.html">History</a>
+        <a href="about.html" class="active">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container about-container">
+    <div class="about-card">
+      <h1>About This App</h1>
+      <p>This small translator app performs instant translations using the server-side <code>/translate</code> endpoint. It supports auto-detect for source language (when available) and several target languages.</p>
+
+      <h3>APIs</h3>
+      <ul>
+        <li>Primary translation uses a high-quality translate API (configured server-side).</li>
+        <li>Fallbacks include LibreTranslate / MyMemory when available.</li>
+      </ul>
+
+      <h3>Technologies</h3>
+      <ul>
+        <li>Java + Jakarta Servlets (backend)</li>
+        <li>Vanilla JavaScript (ES Modules)</li>
+        <li>Fetch API + AbortController</li>
+        <li>CSS Grid & Flexbox for layout</li>
+      </ul>
+
+      <h3>Developer</h3>
+      <p>Built by you — feel free to adapt and improve.</p>
+    </div>
+  </main>
+
+</body>
+</html>

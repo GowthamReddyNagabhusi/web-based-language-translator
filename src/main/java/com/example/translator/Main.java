@@ -10,7 +10,7 @@ public class Main {
             System.out.print("Enter text to translate: ");
             String text = sc.nextLine();
 
-            System.out.print("Translate to (hi/es/fr/de): ");
+            System.out.print("Translate to (Hindi/Spanish/French/German/Telugu): ");
             String lang = sc.nextLine();
 
             String translated = Translator.translate(text, lang);
@@ -19,6 +19,8 @@ public class Main {
 
         } catch (Exception e) {
             System.out.println("Error occurred: " + e.getMessage());
+        } finally {
+            sc.close();
         }
     }
 }
