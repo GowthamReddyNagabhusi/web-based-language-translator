@@ -15,6 +15,8 @@ const copyBtn = document.getElementById('copyBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const saveBtn = document.getElementById('saveBtn');
 const spinner = document.getElementById('spinner');
+const clearBtn = document.getElementById('clearBtn');
+const extrasToggle = document.getElementById('extrasToggle');
 
 let history = loadFromStorage(STORAGE_KEY) || [];
 
@@ -55,6 +57,24 @@ const debouncedTranslate = debounce(() => doTranslate(), 400);
 inputText.addEventListener('input', (e)=>{ charCount.textContent = e.target.value.length; debouncedTranslate(); });
 translateBtn.addEventListener('click', ()=> doTranslate());
 
+// clear input and output
+if(clearBtn) clearBtn.addEventListener('click', ()=>{
+  inputText.value = '';
+  outputBox.textContent = '';
+  detectedLang.textContent = 'Source: —';
+  charCount.textContent = '0';
+});
+
+// extras toggle (collapsible sidebar)
+if(extrasToggle){
+  extrasToggle.addEventListener('click', ()=>{
+    const ex = document.getElementById('extras');
+    const expanded = extrasToggle.getAttribute('aria-expanded') === 'true';
+    extrasToggle.setAttribute('aria-expanded', String(!expanded));
+    ex.classList.toggle('collapsed');
+  });
+}
+
 swapBtn.addEventListener('click', ()=>{
   // swap output to input and set focus
   const out = outputBox.textContent || '';
@@ -68,7 +88,12 @@ swapBtn.addEventListener('click', ()=>{
 });
 
 copyBtn.addEventListener('click', async ()=>{
-  try{ await navigator.clipboard.writeText(outputBox.textContent || ''); copyBtn.textContent = 'Copied!'; setTimeout(()=>copyBtn.textContent='📋 Copy',1200);}catch(e){alert('Copy failed');}
+  try{ await navigator.clipboard.writeText(outputBox.textContent || '');
+    // show temporary tooltip text for accessibility
+    const prev = copyBtn.getAttribute('data-title') || '';
+    copyBtn.textContent = 'Copied';
+    setTimeout(()=>{ copyBtn.textContent = ''; if(prev) copyBtn.setAttribute('data-title', prev); },1200);
+  }catch(e){alert('Copy failed');}
 });
 
 downloadBtn.addEventListener('click', ()=>{
@@ -83,6 +108,18 @@ saveBtn.addEventListener('click', ()=>{
   if(!text || !out) return alert('Nothing to save');
   const record = { id: uuidv4(), inputText: text, outputText: out, sourceLang: (detectedLang.textContent||'').replace('Source: ','') || 'auto', targetLang: targetLang.value, timestamp: Date.now() };
   history.push(record); saveToStorage(STORAGE_KEY, history); alert('Saved to history');
+});
+
+// Template quick-insert (if templates exist in the DOM)
+document.querySelectorAll('.template-item').forEach(item => {
+  item.addEventListener('click', ()=>{
+    const text = item.getAttribute('data-text') || '';
+    const lang = item.getAttribute('data-lang') || '';
+    inputText.value = text;
+    charCount.textContent = text.length;
+    if(lang && targetLang) targetLang.value = lang;
+    doTranslate(text);
+  });
 });
 
 // re-translate support: if history wants to send data back, check localStorage 'retranslate'

@@ -4,13 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Translator — Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <meta name="theme-color" content="#667eea">
 </head>
 <body>
   <header class="nav">
     <div class="nav-left">
-      <a class="brand" href="index.html">🌐 Translator</a>
+      <a class="brand" href="index.html">Translator</a>
       <nav class="main-nav">
         <a href="index.html" class="active">Home</a>
         <a href="history.html">History</a>
@@ -18,24 +19,22 @@
       </nav>
     </div>
     <div class="nav-right">
-      <button id="themeToggle" class="icon-btn" title="Toggle theme">🌓</button>
+      <button id="themeToggle" class="icon-btn" title="Toggle theme">Theme</button>
     </div>
   </header>
 
-  <main class="container">
-    <section class="two-col">
-      <!-- LEFT: Input -->
-      <div class="col left-col">
-        <div class="panel">
-          <div class="panel-head">
-            <h2>Enter text</h2>
-            <div class="controls-inline">
-              <span id="charCount">0</span>
-            </div>
-          </div>
+  <main class="main-grid">
+    <section class="primary">
+      <div class="card input-card">
+        <label class="field-label">Enter text to translate</label>
+        <div class="textarea-wrap">
           <textarea id="inputText" placeholder="Type or paste text..." spellcheck="true"></textarea>
-          <div class="panel-foot">
-            <div class="row">
+          <div class="char-count" id="charCount">0</div>
+        </div>
+
+        <div class="controls-row">
+          <div class="left-controls">
+            <div class="lang-select-wrap">
               <select id="targetLang" aria-label="Target language">
                 <option value="fr">French</option>
                 <option value="es">Spanish</option>
@@ -46,181 +45,66 @@
                 <option value="it">Italian</option>
                 <option value="te">Telugu</option>
               </select>
-              <button id="swapBtn" class="btn">⇄ Swap</button>
-              <button id="translateBtn" class="btn primary">Translate</button>
+              <button id="swapBtn" class="icon-btn" title="Swap languages">⇄</button>
             </div>
+          </div>
+          <div class="right-controls">
+            <button id="translateBtn" class="btn primary">Translate</button>
+            <button id="clearBtn" class="btn">Clear</button>
           </div>
         </div>
       </div>
 
-      <!-- RIGHT: Output -->
-      <div class="col right-col">
-        <div class="panel">
-          <div class="panel-head">
-            <h2>Translation</h2>
-            <div class="controls-inline">
-              <span id="detectedLang">Source: —</span>
-            </div>
-          </div>
-          <div id="outputBox" class="output-box">Live translation will appear here...</div>
-          <div class="panel-foot">
-            <div class="row">
-              <button id="copyBtn" class="btn">📋 Copy</button>
-              <button id="downloadBtn" class="btn">⬇️ Download</button>
-              <button id="saveBtn" class="btn">💾 Save</button>
-            </div>
+      <div class="card translation-card">
+        <div class="card-head">
+          <h3>Translation</h3>
+          <div class="card-actions">
+            <button id="copyBtn" class="icon-btn" title="Copy"></button>
+            <button id="downloadBtn" class="icon-btn" title="Download"></button>
+            <button id="saveBtn" class="icon-btn" title="Save"></button>
           </div>
         </div>
+        <div id="outputBox" class="translation-body">Live translation will appear here...</div>
+        <div class="detected"> <span id="detectedLang">Source: —</span></div>
       </div>
     </section>
+
+    <aside class="extras" id="extras">
+      <button id="extrasToggle" class="extras-toggle" aria-expanded="true">Extras ▾</button>
+      <div class="extras-content">
+        <section class="extras-block">
+          <h4>Quick Phrases</h4>
+          <div class="templates-grid">
+            <div class="template-item" data-text="Hello, how are you?" data-lang="fr">
+              <div class="template-title">Greeting</div>
+              <div class="template-text">Hello, how are you?</div>
+            </div>
+            <div class="template-item" data-text="What is your name?" data-lang="es">
+              <div class="template-title">Question</div>
+              <div class="template-text">What is your name?</div>
+            </div>
+            <div class="template-item" data-text="Thank you very much!" data-lang="de">
+              <div class="template-title">Gratitude</div>
+              <div class="template-text">Thank you very much!</div>
+            </div>
+            <div class="template-item" data-text="Where is the bathroom?" data-lang="ja">
+              <div class="template-title">Practical</div>
+              <div class="template-text">Where is the bathroom?</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="extras-block">
+          <h4>History</h4>
+          <div id="historyPreview" class="history-preview">No recent items</div>
+          <a href="history.html" class="link">Open full history →</a>
+        </section>
+      </div>
+    </aside>
   </main>
 
   <div id="spinner" class="spinner hidden" aria-hidden="true"><div class="dot"></div></div>
 
   <script type="module" src="translator.js"></script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Mini Translator - Instant Language Translation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<main class="dashboard">
-    <!-- Header -->
-    <header class="dashboard-header">
-        <div class="header-content">
-            <h1 class="main-title">🌐 Language Translator</h1>
-            <p class="subtitle">Instant translations across 8 languages</p>
-        </div>
-        <button id="clearHistory" class="header-btn" title="Clear all history">🗑️ Clear History</button>
-    </header>
-
-    <!-- Main Content Grid -->
-    <div class="dashboard-grid">
-        <!-- Left Panel: Input & Translation -->
-        <section class="panel input-panel">
-            <div class="panel-header">
-                <h2>📝 Your Text</h2>
-            </div>
-            <div class="panel-body">
-                <textarea id="inputText" class="textarea" placeholder="Type or paste text here... Try a template below!"></textarea>
-                <div class="text-info">
-                    <span><span id="charCount">0</span> characters</span>
-                    <span id="suggestion" class="suggestion-badge"></span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Center Panel: Controls & Output -->
-        <section class="panel control-panel">
-            <div class="panel-header">
-                <h2>🗣️ Translate To</h2>
-            </div>
-            <div class="panel-body">
-                <select id="language" class="language-select" aria-label="Target language">
-                    <option value="hi">🇮🇳 Hindi — हिन्दी</option>
-                    <option value="te">🇮🇳 Telugu — తెలుగు</option>
-                    <option value="fr">🇫🇷 French — Français</option>
-                    <option value="es">🇪🇸 Spanish — Español</option>
-                    <option value="de">🇩🇪 German — Deutsch</option>
-                    <option value="it">🇮🇹 Italian — Italiano</option>
-                    <option value="ja">🇯🇵 Japanese — 日本語</option>
-                    <option value="zh">🇨🇳 Chinese — 中文</option>
-                </select>
-
-                <div class="button-group">
-                    <button id="translateBtn" class="btn btn-primary">✨ Translate</button>
-                    <button id="clearBtn" class="btn btn-secondary">🔄 Clear</button>
-                </div>
-
-                <div class="divider"></div>
-
-                <div class="output-section">
-                    <h3>📢 Translation</h3>
-                    <div id="output" class="output-box">Your translation will appear here...</div>
-                    <button id="copyOutput" class="btn btn-copy" title="Copy translated text">📋 Copy Translation</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Right Panel: Templates & History -->
-        <section class="panel sidebar-panel">
-            <div class="sidebar-tabs">
-                <button class="tab-btn active" data-tab="templates">Templates</button>
-                <button class="tab-btn" data-tab="history">History</button>
-            </div>
-
-            <!-- Templates Tab -->
-            <div id="templates" class="tab-content active">
-                <div class="panel-header">
-                    <h3>💡 Try These</h3>
-                </div>
-                <div class="templates-list">
-                    <div class="template-item" data-text="Hello, how are you?" data-lang="fr">
-                        <div class="template-title">Greeting</div>
-                        <div class="template-text">Hello, how are you?</div>
-                        <div class="template-meta">→ French</div>
-                    </div>
-                    <div class="template-item" data-text="What is your name?" data-lang="es">
-                        <div class="template-title">Question</div>
-                        <div class="template-text">What is your name?</div>
-                        <div class="template-meta">→ Spanish</div>
-                    </div>
-                    <div class="template-item" data-text="Thank you very much!" data-lang="de">
-                        <div class="template-title">Gratitude</div>
-                        <div class="template-text">Thank you very much!</div>
-                        <div class="template-meta">→ German</div>
-                    </div>
-                    <div class="template-item" data-text="Where is the bathroom?" data-lang="ja">
-                        <div class="template-title">Practical</div>
-                        <div class="template-text">Where is the bathroom?</div>
-                        <div class="template-meta">→ Japanese</div>
-                    </div>
-                    <div class="template-item" data-text="I love learning languages" data-lang="zh">
-                        <div class="template-title">Statement</div>
-                        <div class="template-text">I love learning languages</div>
-                        <div class="template-meta">→ Chinese</div>
-                    </div>
-                    <div class="template-item" data-text="Good morning! How can I help you?" data-lang="hi">
-                        <div class="template-title">Polite</div>
-                        <div class="template-text">Good morning! How can I help you?</div>
-                        <div class="template-meta">→ Hindi</div>
-                    </div>
-                    <div class="template-item" data-text="The weather is beautiful today" data-lang="te">
-                        <div class="template-title">Observation</div>
-                        <div class="template-text">The weather is beautiful today</div>
-                        <div class="template-meta">→ Telugu</div>
-                    </div>
-                    <div class="template-item" data-text="I'm excited to meet you!" data-lang="it">
-                        <div class="template-title">Enthusiasm</div>
-                        <div class="template-text">I'm excited to meet you!</div>
-                        <div class="template-meta">→ Italian</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- History Tab -->
-            <div id="history" class="tab-content">
-                <div class="panel-header">
-                    <h3>⏱️ Recent</h3>
-                </div>
-                <ul id="historyList" class="history-list"></ul>
-            </div>
-        </section>
-    </div>
-
-    <div id="spinner" class="spinner hidden" aria-hidden="true">
-        <div class="dot"></div>
-    </div>
-</main>
-
-<script src="script.js"></script>
 </body>
 </html>
