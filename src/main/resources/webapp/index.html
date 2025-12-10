@@ -32,6 +32,8 @@
           <div class="char-count" id="charCount">0</div>
         </div>
 
+        <div id="suggestionBar" class="suggestion-bar" aria-live="polite" hidden></div>
+
         <div class="controls-row">
           <div class="left-controls">
             <div class="lang-select-wrap">
@@ -47,6 +49,21 @@
               </select>
               <button id="swapBtn" class="icon-btn" title="Swap languages">⇄</button>
             </div>
+          </div>
+          <div class="center-controls">
+            <label for="toneSelect" class="visually-hidden">Tone</label>
+            <select id="toneSelect" class="tone-select" title="Tone / Style">
+              <option value="default">Default</option>
+              <option value="formal">Formal</option>
+              <option value="casual">Casual</option>
+              <option value="polite">Polite</option>
+              <option value="concise">Concise</option>
+              <option value="creative">Creative</option>
+              <option value="technical">Technical</option>
+            </select>
+            <label class="live-toggle"><input type="checkbox" id="liveToggle" checked> Live</label>
+            <input id="targetLangCode" class="lang-code-input" type="text" placeholder="lang code (e.g. en, fr-CA, zh-Hans)" aria-label="Target language code">
+            <div id="targetSuggestions" class="target-suggestions" aria-hidden="false"></div>
           </div>
           <div class="right-controls">
             <button id="translateBtn" class="btn primary">Translate</button>

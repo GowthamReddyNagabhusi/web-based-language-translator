@@ -44,7 +44,15 @@ public class TranslateServlet extends HttpServlet {
 
         System.out.println("Received - TEXT: " + text + ", LANG: " + lang + ", contentType=" + contentType);
 
-        resp.setContentType("text/plain; charset=UTF-8");
+        // respond in JSON when client is JSON-aware, otherwise plain text
+        String accept = req.getHeader("Accept");
+        boolean wantsJson = (accept != null && accept.toLowerCase().contains("application/json"))
+                || (contentType != null && contentType.toLowerCase().contains("application/json"));
+        if (wantsJson) {
+            resp.setContentType("application/json; charset=UTF-8");
+        } else {
+            resp.setContentType("text/plain; charset=UTF-8");
+        }
         resp.setCharacterEncoding("UTF-8");
 
         try {
@@ -61,12 +69,28 @@ public class TranslateServlet extends HttpServlet {
             }
 
             String translated = Translator.translate(text, lang);
-            resp.getWriter().write(translated);
+            if (wantsJson) {
+                Gson gson = new Gson();
+                JsonObject out = new JsonObject();
+                out.addProperty("translatedText", translated);
+                out.addProperty("detectedSourceLang", "auto");
+                resp.getWriter().write(gson.toJson(out));
+            } else {
+                resp.getWriter().write(translated);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().write("Error: " + e.getMessage());
+            String msg = e.getMessage() == null ? "Internal error" : e.getMessage();
+            if (wantsJson) {
+                Gson gson = new Gson();
+                JsonObject out = new JsonObject();
+                out.addProperty("error", msg);
+                resp.getWriter().write(gson.toJson(out));
+            } else {
+                resp.getWriter().write("Error: " + msg);
+            }
         }
     }
 }

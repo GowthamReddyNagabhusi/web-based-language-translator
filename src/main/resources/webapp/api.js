@@ -10,6 +10,15 @@ export async function translate(text, targetLang, timeoutMs = 10000) {
     });
 
     const txt = await res.text();
+    if (!res.ok) {
+      // prefer JSON error messages
+      try {
+        const err = JSON.parse(txt);
+        throw new Error(err.error || err.message || txt || 'Translation failed');
+      } catch (e) {
+        throw new Error(txt || 'Translation failed');
+      }
+    }
     // try parse JSON if backend returned structured response
     try {
       const j = JSON.parse(txt);

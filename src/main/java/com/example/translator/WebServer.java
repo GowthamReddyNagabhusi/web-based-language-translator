@@ -13,6 +13,7 @@ public class WebServer {
 
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         handler.setContextPath("/");
+        handler.setWelcomeFiles(new String[]{"index.html"});
 
         // ---- STATIC FILES SETUP ----
         // Load files from resources/webapp

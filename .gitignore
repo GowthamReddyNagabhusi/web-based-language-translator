@@ -1,19 +1,16 @@
 target/
 *.class
 *.log
-*.jar
 *.war
 *.ear
-ECHO is on.
 # IDE files
 .idea/
 *.iml
 .vscode/
-ECHO is on.
 # OS files
 .DS_Store
 Thumbs.db
-ECHO is on.
 # Keys / env
 *.env
 apikey.txt
+# JAR files are included in distribution
