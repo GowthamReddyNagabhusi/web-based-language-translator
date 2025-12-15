@@ -51,19 +51,7 @@
             </div>
           </div>
           <div class="center-controls">
-            <label for="toneSelect" class="visually-hidden">Tone</label>
-            <select id="toneSelect" class="tone-select" title="Tone / Style">
-              <option value="default">Default</option>
-              <option value="formal">Formal</option>
-              <option value="casual">Casual</option>
-              <option value="polite">Polite</option>
-              <option value="concise">Concise</option>
-              <option value="creative">Creative</option>
-              <option value="technical">Technical</option>
-            </select>
             <label class="live-toggle"><input type="checkbox" id="liveToggle" checked> Live</label>
-            <input id="targetLangCode" class="lang-code-input" type="text" placeholder="lang code (e.g. en, fr-CA, zh-Hans)" aria-label="Target language code">
-            <div id="targetSuggestions" class="target-suggestions" aria-hidden="false"></div>
           </div>
           <div class="right-controls">
             <button id="translateBtn" class="btn primary">Translate</button>
@@ -83,6 +71,10 @@
         </div>
         <div id="outputBox" class="translation-body">Live translation will appear here...</div>
         <div class="detected"> <span id="detectedLang">Source: —</span></div>
+        <div id="pronunciationBlock" class="pronunciation hidden">
+          <div class="pronunciation-label">Pronunciation (Readable)</div>
+          <div id="pronunciationText" class="pronunciation-body"></div>
+        </div>
       </div>
     </section>
 
@@ -104,9 +96,9 @@
               <div class="template-title">Gratitude</div>
               <div class="template-text">Thank you very much!</div>
             </div>
-            <div class="template-item" data-text="Where is the bathroom?" data-lang="ja">
-              <div class="template-title">Practical</div>
-              <div class="template-text">Where is the bathroom?</div>
+            <div class="template-item" data-text="Could you help me, please?" data-lang="it">
+              <div class="template-title">Assistance</div>
+              <div class="template-text">Could you help me, please?</div>
             </div>
           </div>
         </section>
@@ -122,6 +114,6 @@
 
   <div id="spinner" class="spinner hidden" aria-hidden="true"><div class="dot"></div></div>
 
-  <script type="module" src="translator.js"></script>
+  <script type="module" src="translator.js?v=20251215"></script>
 </body>
 </html>

@@ -4,7 +4,10 @@ export async function translate(text, targetLang, timeoutMs = 10000) {
   try {
     const res = await fetch('/translate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify({ text, lang: targetLang }),
       signal: controller.signal
     });
@@ -22,10 +25,22 @@ export async function translate(text, targetLang, timeoutMs = 10000) {
     // try parse JSON if backend returned structured response
     try {
       const j = JSON.parse(txt);
-      // expect { translatedText, detectedSourceLang }
-      return { translatedText: j.translatedText || j.text || txt, sourceLang: j.detectedSourceLang || j.source || null };
+      // expect { translatedText, detectedSourceLang, pronunciation? }
+      const pronunciation =
+        j.pronunciation ||
+        j.pronouncedText ||
+        j.pronunciationText ||
+        j.readable ||
+        j.romanization ||
+        j.transliteration ||
+        null;
+      return {
+        translatedText: j.translatedText || j.text || txt,
+        sourceLang: j.detectedSourceLang || j.source || null,
+        pronunciation
+      };
     } catch (e) {
-      return { translatedText: txt, sourceLang: null };
+      return { translatedText: txt, sourceLang: null, pronunciation: null };
     }
   } catch (err) {
     if (err.name === 'AbortError') throw new Error('Request timed out');

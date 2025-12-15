@@ -60,7 +60,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Maven WAR Plugin - Create WAR file -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -77,6 +76,7 @@
                                     <mainClass>com.example.translator.WebServer</mainClass>
                                 </transformer>
                             </transformers>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
                     </execution>
                 </executions>
