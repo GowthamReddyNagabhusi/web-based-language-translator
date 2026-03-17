@@ -14,36 +14,28 @@ export async function translate(text, targetLang, timeoutMs = 10000) {
 
     const txt = await res.text();
     if (!res.ok) {
-      // prefer JSON error messages
+      let errorMsg = 'Translation failed';
       try {
         const err = JSON.parse(txt);
-        throw new Error(err.error || err.message || txt || 'Translation failed');
-      } catch (e) {
-        throw new Error(txt || 'Translation failed');
+        errorMsg = err.error || err.message || errorMsg;
+      } catch (_) {
+        errorMsg = txt || errorMsg;
       }
+      throw new Error(errorMsg);
     }
-    // try parse JSON if backend returned structured response
+
     try {
       const j = JSON.parse(txt);
-      // expect { translatedText, detectedSourceLang, pronunciation? }
-      const pronunciation =
-        j.pronunciation ||
-        j.pronouncedText ||
-        j.pronunciationText ||
-        j.readable ||
-        j.romanization ||
-        j.transliteration ||
-        null;
       return {
         translatedText: j.translatedText || j.text || txt,
         sourceLang: j.detectedSourceLang || j.source || null,
-        pronunciation
+        pronunciation: j.pronunciation || j.romanization || j.transliteration || null
       };
-    } catch (e) {
+    } catch (_) {
       return { translatedText: txt, sourceLang: null, pronunciation: null };
     }
   } catch (err) {
-    if (err.name === 'AbortError') throw new Error('Request timed out');
+    if (err.name === 'AbortError') throw new Error('Request timed out — please try again');
     throw err;
   } finally {
     clearTimeout(id);

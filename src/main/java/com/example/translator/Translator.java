@@ -9,10 +9,13 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Translator {
 
-    // Prefer LibreTranslate endpoints; fall back to MyMemory if public instances require keys.
+    private static final Logger LOG = LoggerFactory.getLogger(Translator.class);
+
     private static final String[] LIBRE_ENDPOINTS = new String[] {
         "https://libretranslate.com/translate",
         "https://translate.argosopentech.com/translate"
@@ -154,11 +157,11 @@ public class Translator {
                         }
                     }
                 } catch (Exception ex) {
-                    // ignore and continue to other providers
+                    LOG.debug("Google Translate response parse error: {}", ex.getMessage());
                 }
             }
         } catch (Exception e) {
-            // ignore and continue to other providers
+            LOG.debug("Google Translate endpoint failed: {}", e.getMessage());
         }
 
         // Try libretranslate endpoints in order
@@ -194,7 +197,7 @@ public class Translator {
                 }
 
             } catch (Exception e) {
-                // try next endpoint
+                LOG.debug("LibreTranslate endpoint {} failed: {}", endpoint, e.getMessage());
                 continue;
             }
         }
@@ -202,7 +205,7 @@ public class Translator {
         // Fallback: MyMemory (GET)
         try {
             String encoded = java.net.URLEncoder.encode(text, StandardCharsets.UTF_8);
-            String url = MYMEMORY_API + "?q=" + encoded + "&langpair=en|" + normalizedTarget;
+            String url = MYMEMORY_API + "?q=" + encoded + "&langpair=auto|" + normalizedTarget;
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Accept", "application/json")
@@ -244,7 +247,7 @@ public class Translator {
                 }
             }
         } catch (Exception e) {
-            // fall through to final failure
+            LOG.debug("MyMemory API failed: {}", e.getMessage());
         }
 
         throw new Exception("No translation returned from available APIs");

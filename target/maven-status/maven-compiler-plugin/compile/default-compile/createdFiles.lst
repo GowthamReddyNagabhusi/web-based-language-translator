@@ -6,6 +6,7 @@ com\example\translator\Translator$7.class
 com\example\translator\Translator.class
 com\example\translator\Translator$6.class
 com\example\translator\Main.class
+com\example\translator\HealthServlet.class
 com\example\translator\Translator$5.class
 com\example\translator\Translator$TranslationResult.class
 com\example\translator\TranslateServlet.class

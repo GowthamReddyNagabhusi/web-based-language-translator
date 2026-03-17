@@ -4,10 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Translator — About</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌐</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="nav">
+  <header class="nav gradient-nav">
     <div class="nav-left">
       <a class="brand" href="index.html">🌐 Translator</a>
       <nav class="main-nav">
@@ -16,31 +18,92 @@
         <a href="about.html" class="active">About</a>
       </nav>
     </div>
+    <div class="nav-right">
+      <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle dark mode">🌙</button>
+    </div>
   </header>
 
   <main class="container about-container">
     <div class="about-card">
-      <h1>About This App</h1>
-      <p>This small translator app performs instant translations using the server-side <code>/translate</code> endpoint. It supports auto-detect for source language (when available) and several target languages.</p>
+      <h1>🌐 About Translator v2.0</h1>
+      <p>A production-ready, full-stack language translator delivering instant translations across <strong>8 languages</strong> with auto-detection, pronunciation guides, keyboard shortcuts, and persistent history — all from a single deployable JAR.</p>
 
-      <h3>APIs</h3>
+      <h3>✨ Features</h3>
       <ul>
-        <li>Primary translation uses a high-quality translate API (configured server-side).</li>
-        <li>Fallbacks include LibreTranslate / MyMemory when available.</li>
+        <li><strong>Live translation</strong> — real-time as-you-type with configurable debounce</li>
+        <li><strong>8 target languages</strong> — French, Spanish, German, Hindi, Japanese, Chinese, Italian, Telugu</li>
+        <li><strong>Pronunciation / romanization</strong> — for Japanese, Hindi, and Telugu scripts</li>
+        <li><strong>Text-to-speech</strong> — listen to translations via Web Speech API</li>
+        <li><strong>Share translations</strong> — via Web Share API or clipboard fallback</li>
+        <li><strong>Translation history</strong> — search, filter, export/import as JSON, favorite items</li>
+        <li><strong>Keyboard shortcuts</strong> — Ctrl+Enter, Esc, Ctrl+Shift+C, Ctrl+Shift+S</li>
+        <li><strong>Word count &amp; reading time</strong> — live stats as you type</li>
+        <li><strong>Dark mode</strong> — system preference detection + manual toggle, persisted across sessions</li>
+        <li><strong>Responsive design</strong> — optimized for mobile, tablet, and desktop</li>
       </ul>
 
-      <h3>Technologies</h3>
+      <h3>🏗️ Architecture</h3>
       <ul>
-        <li>Java + Jakarta Servlets (backend)</li>
-        <li>Vanilla JavaScript (ES Modules)</li>
-        <li>Fetch API + AbortController</li>
-        <li>CSS Grid & Flexbox for layout</li>
+        <li>Backend: Java 17 + Embedded Jetty 11 (no framework overhead)</li>
+        <li>API: <code>POST /translate</code> — accepts JSON, returns structured response</li>
+        <li>Translation chain: Google Translate → LibreTranslate → MyMemory (cascading fallback)</li>
+        <li>Health endpoint: <code>GET /health</code> for container orchestrators</li>
+        <li>Frontend: Vanilla ES Modules — zero build step, zero dependencies</li>
+        <li>Logging: SLF4J + Logback with structured output</li>
       </ul>
 
-      <h3>Developer</h3>
-      <p>Built by you — feel free to adapt and improve.</p>
+      <h3>🛠️ Technologies</h3>
+      <ul>
+        <li>Java 17, Maven, Embedded Jetty 11, Jakarta Servlets</li>
+        <li>Gson for JSON serialization</li>
+        <li>SLF4J + Logback for production logging</li>
+        <li>Vanilla JavaScript (ES Modules), Fetch API, AbortController, Web Share API</li>
+        <li>CSS Grid, Flexbox, CSS Custom Properties, CSS Animations</li>
+        <li>Docker multi-stage build with health checks</li>
+      </ul>
+
+      <h3>⌨️ Keyboard Shortcuts</h3>
+      <ul>
+        <li><code>Ctrl+Enter</code> — Translate immediately</li>
+        <li><code>Esc</code> — Clear input and output</li>
+        <li><code>Ctrl+Shift+C</code> — Copy translation to clipboard</li>
+        <li><code>Ctrl+Shift+S</code> — Share translation</li>
+      </ul>
+
+      <h3>👨‍💻 Developer</h3>
+      <p>Built as a portfolio project demonstrating full-stack Java development, multi-provider API integration (fallback chains, timeout handling), and modern frontend practices with zero dependencies.</p>
     </div>
   </main>
 
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>🌐 Translator v2.0</span>
+      <span class="footer-sep">·</span>
+      <a href="index.html" class="footer-link">Home</a>
+      <span class="footer-sep">·</span>
+      <a href="history.html" class="footer-link">History</a>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { loadFromStorage, saveToStorage } from './utils.js';
+    const THEME_KEY = 'translatorTheme';
+    const toggle = document.getElementById('themeToggle');
+    (function initTheme() {
+      const saved = loadFromStorage(THEME_KEY);
+      if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.body.classList.add('dark');
+        if (toggle) toggle.textContent = '☀️';
+      }
+    })();
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        toggle.textContent = isDark ? '☀️' : '🌙';
+        saveToStorage(THEME_KEY, isDark ? 'dark' : 'light');
+      });
+    }
+  </script>
 </body>
 </html>
