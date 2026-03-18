@@ -1,8 +1,10 @@
+const API_BASE = window.TRANSLATOR_API_BASE || '';
+
 export async function translate(text, targetLang, timeoutMs = 10000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch('/translate', {
+    const res = await fetch(`${API_BASE}/translate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -13,6 +15,13 @@ export async function translate(text, targetLang, timeoutMs = 10000) {
     });
 
     const txt = await res.text();
+
+    if (res.status === 429) {
+      throw new Error('Rate limit exceeded — please wait a moment and try again');
+    }
+    if (res.status >= 500) {
+      throw new Error('Translation service is temporarily unavailable — please try again later');
+    }
     if (!res.ok) {
       let errorMsg = 'Translation failed';
       try {
@@ -36,6 +45,9 @@ export async function translate(text, targetLang, timeoutMs = 10000) {
     }
   } catch (err) {
     if (err.name === 'AbortError') throw new Error('Request timed out — please try again');
+    if (err instanceof TypeError && err.message.includes('fetch')) {
+      throw new Error('Network error — check your internet connection');
+    }
     throw err;
   } finally {
     clearTimeout(id);

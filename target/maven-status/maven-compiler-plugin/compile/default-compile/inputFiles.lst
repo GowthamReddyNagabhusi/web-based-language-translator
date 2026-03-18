@@ -1,5 +1,15 @@
-C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\TranslateServlet.java
+C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\metrics\MetricsRegistry.java
+C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\provider\TranslationException.java
+C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\provider\TranslationResult.java
+C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\service\TranslationService.java
+C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\provider\MyMemoryProvider.java
 C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\WebServer.java
-C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\HealthServlet.java
+C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\config\AppConfig.java
 C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\Translator.java
 C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\Main.java
+C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\provider\LibreTranslateProvider.java
+C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\api\filter\MetricsFilter.java
+C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\romanize\Romanizer.java
+C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\api\error\ErrorHandler.java
+C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\provider\TranslationProvider.java
+C:\Prjoects\web-based-language-translator\src\main\java\com\example\translator\provider\GoogleTranslateProvider.java
