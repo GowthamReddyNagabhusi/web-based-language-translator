@@ -3,8 +3,6 @@ package com.example.translator.provider;
 import com.example.translator.config.AppConfig;
 import com.example.translator.romanize.Romanizer;
 import com.google.gson.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -17,7 +15,6 @@ import java.time.Duration;
 /** Unofficial Google Translate endpoint — fast, free, no API key. */
 public class GoogleTranslateProvider implements TranslationProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GoogleTranslateProvider.class);
     private final HttpClient httpClient;
     private final Duration requestTimeout;
 

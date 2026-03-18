@@ -17,10 +17,11 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 public final class MetricsRegistry {
 
     private static final PrometheusMeterRegistry REGISTRY = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+    private static final JvmGcMetrics JVM_GC_METRICS = new JvmGcMetrics();
 
     static {
         new JvmMemoryMetrics().bindTo(REGISTRY);
-        new JvmGcMetrics().bindTo(REGISTRY);
+        JVM_GC_METRICS.bindTo(REGISTRY);
         new JvmThreadMetrics().bindTo(REGISTRY);
         new ClassLoaderMetrics().bindTo(REGISTRY);
         new ProcessorMetrics().bindTo(REGISTRY);

@@ -3,8 +3,6 @@ package com.example.translator.provider;
 import com.example.translator.config.AppConfig;
 import com.example.translator.romanize.Romanizer;
 import com.google.gson.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -17,7 +15,6 @@ import java.time.Duration;
 /** MyMemory translation API — free tier, no key required. */
 public class MyMemoryProvider implements TranslationProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MyMemoryProvider.class);
     private static final String API_URL = "https://api.mymemory.translated.net/get";
 
     private final HttpClient httpClient;
