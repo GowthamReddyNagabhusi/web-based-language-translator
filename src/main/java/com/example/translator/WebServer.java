@@ -8,6 +8,7 @@ import com.example.translator.provider.*;
 import com.example.translator.service.TranslationService;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -179,11 +180,18 @@ public class WebServer {
             String text = null, lang = null;
             String contentType = req.getContentType();
             if (contentType != null && contentType.toLowerCase().contains("application/json")) {
-                JsonObject obj = readJsonBody(req);
-                if (obj != null) {
-                    if (obj.has("text") && !obj.get("text").isJsonNull()) text = obj.get("text").getAsString();
-                    if (obj.has("lang") && !obj.get("lang").isJsonNull()) lang = obj.get("lang").getAsString();
+                JsonObject obj;
+                try {
+                    obj = readJsonBody(req);
+                } catch (RequestTooLargeException e) {
+                    ErrorHandler.sendError(resp, 413, "Request body exceeds maximum size of " + MAX_BODY_BYTES + " bytes", requestId);
+                    return;
+                } catch (MalformedJsonException e) {
+                    ErrorHandler.sendError(resp, 400, "Invalid JSON request body", requestId);
+                    return;
                 }
+                if (obj.has("text") && !obj.get("text").isJsonNull()) text = obj.get("text").getAsString();
+                if (obj.has("lang") && !obj.get("lang").isJsonNull()) lang = obj.get("lang").getAsString();
             }
             if (text == null) text = req.getParameter("text");
             if (lang == null) lang = req.getParameter("lang");
@@ -246,7 +254,7 @@ public class WebServer {
             return null;
         }
 
-        private JsonObject readJsonBody(HttpServletRequest req) {
+        private JsonObject readJsonBody(HttpServletRequest req) throws RequestTooLargeException, MalformedJsonException {
             StringBuilder sb = new StringBuilder();
             try (BufferedReader reader = req.getReader()) {
                 char[] buf = new char[4096];
@@ -255,16 +263,30 @@ public class WebServer {
                     totalRead += n;
                     if (totalRead > MAX_BODY_BYTES) {
                         LOG.warn("Request body exceeds {} bytes", MAX_BODY_BYTES);
-                        return null;
+                        throw new RequestTooLargeException();
                     }
                     sb.append(buf, 0, n);
                 }
-                return GSON.fromJson(sb.toString(), JsonObject.class);
-            } catch (Exception e) {
+                String body = sb.toString();
+                if (body.isBlank()) {
+                    throw new MalformedJsonException();
+                }
+                JsonObject parsed = GSON.fromJson(body, JsonObject.class);
+                if (parsed == null) {
+                    throw new MalformedJsonException();
+                }
+                return parsed;
+            } catch (JsonSyntaxException | IllegalStateException e) {
                 LOG.warn("Failed to parse JSON body: {}", e.getMessage());
-                return null;
+                throw new MalformedJsonException();
+            } catch (IOException e) {
+                LOG.warn("Failed to read request body: {}", e.getMessage());
+                throw new MalformedJsonException();
             }
         }
+
+        static class RequestTooLargeException extends Exception {}
+        static class MalformedJsonException extends Exception {}
 
         private static String resolveRequestId(HttpServletRequest req) {
             String id = req.getHeader("X-Request-Id");
