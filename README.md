@@ -172,6 +172,41 @@ src/main/
 - **Production logging** — Structured SLF4J logging replaces all `System.out.println` calls. Configurable per-package log levels via `logback.xml`.
 - **Security** — Input validation, character limits, language code whitelist, CORS headers, and non-root Docker user.
 
+## Autonomous Builder Automation
+
+This repository now includes autonomous builder customization files and local automation scripts.
+
+### Custom Agents
+
+- `.github/agents/webapp-builder.agent.md` — orchestration agent with full build/polish workflow and specialist delegation.
+- `.github/agents/webapp-frontend-specialist.agent.md` — frontend UX, responsive behavior, and accessibility specialist.
+- `.github/agents/webapp-backend-specialist.agent.md` — backend reliability, API hardening, and performance specialist.
+- `.github/agents/webapp-qa-release.agent.md` — quality gates, tests, and release readiness specialist.
+
+### Local Automation Scripts
+
+- `scripts/autocommit-if-green.ps1`
+  - Pulls latest changes on `main`
+  - Runs `mvn clean verify -DskipTests=false -B`
+  - Commits and pushes only when changes exist and validation passes
+
+- `scripts/register-autobuilder-tasks.ps1`
+  - Installs a Startup-folder launcher so automation runs at user logon
+  - Registers a daily scheduled task (`WebBasedTranslator-AutoCommit-Daily`)
+
+Run once to (re)register automation:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\register-autobuilder-tasks.ps1
+```
+
+### GitHub Actions Daily Schedule
+
+The workflow `.github/workflows/ci.yml` now supports:
+- Daily scheduled run (`cron: 0 7 * * *`)
+- Manual trigger (`workflow_dispatch`)
+- Auto-commit on schedule/manual runs only when validated changes exist
+
 ## What's New in v2.0
 
 - ✨ Gradient navigation bar with animated styling
