@@ -174,14 +174,7 @@ src/main/
 
 ## Autonomous Builder Automation
 
-This repository now includes autonomous builder customization files and local automation scripts.
-
-### Custom Agents
-
-- `.github/agents/webapp-builder.agent.md` — orchestration agent with full build/polish workflow and specialist delegation.
-- `.github/agents/webapp-frontend-specialist.agent.md` — frontend UX, responsive behavior, and accessibility specialist.
-- `.github/agents/webapp-backend-specialist.agent.md` — backend reliability, API hardening, and performance specialist.
-- `.github/agents/webapp-qa-release.agent.md` — quality gates, tests, and release readiness specialist.
+This repository includes local automation scripts.
 
 ### Local Automation Scripts
 

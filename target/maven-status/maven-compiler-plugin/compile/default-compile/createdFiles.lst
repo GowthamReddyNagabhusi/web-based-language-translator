@@ -1,3 +1,4 @@
+com\example\translator\WebServer$TranslateServlet$RequestTooLargeException.class
 com\example\translator\api\filter\MetricsFilter.class
 com\example\translator\config\AppConfig.class
 com\example\translator\WebServer$RateLimitFilter$RateEntry.class
@@ -15,6 +16,7 @@ com\example\translator\WebServer$RateLimitFilter.class
 com\example\translator\provider\TranslationResult.class
 com\example\translator\romanize\Romanizer.class
 com\example\translator\service\TranslationService$ProviderHealth.class
+com\example\translator\WebServer$TranslateServlet$MalformedJsonException.class
 com\example\translator\provider\LibreTranslateProvider.class
 com\example\translator\WebServer$HealthServletInternal.class
 com\example\translator\Translator.class
