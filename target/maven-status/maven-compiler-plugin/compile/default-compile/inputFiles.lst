@@ -8,8 +8,8 @@
 /home/runner/work/web-based-language-translator/web-based-language-translator/src/main/java/com/example/translator/config/AppConfig.java
 /home/runner/work/web-based-language-translator/web-based-language-translator/src/main/java/com/example/translator/provider/LibreTranslateProvider.java
 /home/runner/work/web-based-language-translator/web-based-language-translator/src/main/java/com/example/translator/api/error/ErrorHandler.java
-/home/runner/work/web-based-language-translator/web-based-language-translator/src/main/java/com/example/translator/provider/MyMemoryProvider.java
 /home/runner/work/web-based-language-translator/web-based-language-translator/src/main/java/com/example/translator/provider/TranslationResult.java
+/home/runner/work/web-based-language-translator/web-based-language-translator/src/main/java/com/example/translator/provider/MyMemoryProvider.java
 /home/runner/work/web-based-language-translator/web-based-language-translator/src/main/java/com/example/translator/api/filter/MetricsFilter.java
-/home/runner/work/web-based-language-translator/web-based-language-translator/src/main/java/com/example/translator/metrics/MetricsRegistry.java
 /home/runner/work/web-based-language-translator/web-based-language-translator/src/main/java/com/example/translator/Main.java
+/home/runner/work/web-based-language-translator/web-based-language-translator/src/main/java/com/example/translator/metrics/MetricsRegistry.java
