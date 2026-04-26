@@ -1,223 +1,213 @@
-# 🌐 Web-Based Language Translator
+# Language Translator — Production Grade
 
-A production-ready, full-stack language translator built with **Java 17** and **vanilla JavaScript**. Translates text across **8 languages** with live translation, pronunciation guides, keyboard shortcuts, shareable results, and persistent exportable history — all from a single deployable JAR.
+[![CI](https://github.com/GowthamReddyNagabhusi/web-based-language-translator/actions/workflows/ci.yml/badge.svg)](https://github.com/GowthamReddyNagabhusi/web-based-language-translator/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-80%25%2B-brightgreen)](https://github.com/GowthamReddyNagabhusi/web-based-language-translator)
+[![Java](https://img.shields.io/badge/Java-17-orange)](https://adoptium.net/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-brightgreen)](https://spring.io/projects/spring-boot)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-![Java 17](https://img.shields.io/badge/Java-17-blue) ![Maven](https://img.shields.io/badge/Maven-3.9+-red) ![Jetty](https://img.shields.io/badge/Jetty-11-green) ![Docker](https://img.shields.io/badge/Docker-Ready-blue) ![Version](https://img.shields.io/badge/Version-2.0-purple)
+A production-ready language translation REST API supporting **75+ languages** via AWS Translate, with Redis/Caffeine caching, JWT authentication, paginated history, bulk SQS queue processing, and S3 pre-signed export.
 
-## Features
+---
 
-### Translation Engine
-- **Live translation** — real-time as-you-type with configurable debounce
-- **8 languages** — French, Spanish, German, Hindi, Japanese, Chinese, Italian, Telugu
-- **Cascading API fallback** — Google Translate → LibreTranslate → MyMemory for high availability
-- **Pronunciation / romanization** — built-in transliteration for Japanese (Hiragana/Katakana), Hindi, and Telugu scripts
-- **Text-to-speech** — listen to translations via Web Speech API
+## Architecture
 
-### User Experience
-- **Keyboard shortcuts** — `Ctrl+Enter` translate, `Esc` clear, `Ctrl+Shift+C` copy, `Ctrl+Shift+S` share
-- **Word count & reading time** — live stats displayed as you type
-- **Share translations** — via Web Share API (mobile) or clipboard fallback (desktop)
-- **Character limit warning** — visual indicator turns yellow/red near the 5000 char limit
-- **Inline progress bar** — animated progress indicator during translation
-- **Card glow effects** — subtle focus-within glow on input and translation cards
-- **Button micro-animations** — hover shine, scale, and swap rotation effects
-- **Smooth page transitions** — fade-in-up animation on card mount (respects `prefers-reduced-motion`)
+```
+                  ┌─────────────────────────────────────────────────────────┐
+                  │                   Internet / Client                     │
+                  └──────────────────────────┬──────────────────────────────┘
+                                             │
+                                    ┌────────▼────────┐
+                                    │  AWS ALB (HTTP) │
+                                    └────────┬────────┘
+                                             │
+                         ┌───────────────────▼───────────────────┐
+                         │         ECS Fargate (Spring Boot)      │
+                         │  ┌──────────────────────────────────┐  │
+                         │  │  JwtAuthFilter → SecurityConfig  │  │
+                         │  │  TranslationService              │  │
+                         │  │    L1: Caffeine (10min TTL)      │  │
+                         │  │    L2: Redis (24hr TTL)          │  │
+                         │  │    AWS Translate (primary)       │  │
+                         │  │    LibreTranslate (fallback)     │  │
+                         │  │  HistoryController (paginated)   │  │
+                         │  │  BulkTranslation → SQS Queue    │  │
+                         │  └──────────────────────────────────┘  │
+                         └───┬───────────────────────────┬─────────┘
+                             │                           │
+              ┌──────────────▼──────────┐   ┌───────────▼───────────┐
+              │  RDS PostgreSQL 16      │   │  ElastiCache Redis 7   │
+              │  (Multi-AZ in prod)     │   │  (token blacklist +    │
+              └─────────────────────────┘   │   L2 translation cache)│
+                                            └────────────────────────┘
+                             │
+              ┌──────────────▼──────────┐
+              │  AWS Services           │
+              │  • Translate (primary)  │
+              │  • S3 (export bucket)   │
+              │  • SQS (bulk jobs)      │
+              │  • Secrets Manager      │
+              └─────────────────────────┘
+```
 
-### History & Data
-- **Translation history** — search, filter, and manage past translations (localStorage)
-- **Favorite translations** — star/unstar items for quick access
-- **Export history** — download all history as a JSON file
-- **Import history** — load previously exported history (deduplicates by ID)
-- **History stats** — total count, favorites count, filtered count
-
-### Design & Accessibility
-- **Gradient navigation bar** — animated gradient header across all pages
-- **Dark mode** — system preference detection + manual toggle, persisted across sessions and pages
-- **Responsive design** — optimized for mobile, tablet, and desktop
-- **Site footer** — consistent footer with version and navigation links
-- **Keyboard accessibility** — full focus-visible support and shortcut panel in sidebar
-
-### Production
-- **Health endpoint** — `GET /health` for container orchestrators and load balancers
-- **Structured logging** — SLF4J + Logback with configurable log levels
-- **Docker-ready** — multi-stage Dockerfile with non-root user and health checks
+---
 
 ## Tech Stack
 
-| Layer     | Technology                                           |
-|-----------|------------------------------------------------------|
-| Backend   | Java 17, Embedded Jetty 11, Jakarta Servlets         |
-| API       | RESTful JSON (`POST /translate`, `GET /health`)      |
-| Frontend  | Vanilla JavaScript (ES Modules), CSS Grid/Flexbox    |
-| Sharing   | Web Share API with clipboard fallback                |
-| Storage   | localStorage (history, favorites, theme, preferences)|
-| Logging   | SLF4J + Logback                                      |
-| Build     | Maven with Shade plugin (uber-jar)                   |
-| Deploy    | Docker multi-stage build                             |
+| Layer | Technology |
+|---|---|
+| Language | Java 17 |
+| Framework | Spring Boot 3.2 |
+| Security | Spring Security 6 + JWT RS256 (jjwt) |
+| Database | PostgreSQL 16 via Spring Data JPA + Flyway |
+| Cache L1 | Caffeine (in-memory, 10 min TTL, 1000 entries) |
+| Cache L2 | Redis (24 hr TTL, token blacklisting) |
+| Translation | AWS Translate → LibreTranslate (fallback) |
+| Async/Queue | AWS SQS (bulk translation jobs) |
+| Storage | AWS S3 (pre-signed export URLs) |
+| Resilience | Resilience4j (Circuit Breaker + Retry w/ exponential backoff) |
+| Observability | Spring Actuator + Micrometer + Prometheus + JSON MDC logging |
+| Docs | SpringDoc OpenAPI 3 / Swagger UI |
+| Infra | Docker Compose (local) / Terraform ECS Fargate (AWS) |
+| CI/CD | GitHub Actions (CI + rolling dev deploy + blue-green prod deploy) |
+| Testing | JUnit 5 + Mockito + Testcontainers + JaCoCo (80% minimum) |
 
-## Quick Start
+---
+
+## Local Setup
 
 ### Prerequisites
+
+- Docker Desktop (running)
 - Java 17+
 - Maven 3.9+
+- Make (optional, for convenience targets)
 
-### Build & Run
-
-```bash
-# Build the project
-mvn clean package
-
-# Run the server
-java -jar target/translator-app-1.0-SNAPSHOT.jar
-```
-
-Open **http://localhost:8080** in your browser.
-
-### With Maven (development)
+### 1. Start infrastructure
 
 ```bash
-mvn exec:java -Dexec.mainClass="com.example.translator.WebServer"
+make up
+# OR
+docker compose up -d
 ```
 
-### With Docker
+This starts:
+- PostgreSQL 16 on `localhost:5432`
+- Redis 7 on `localhost:6379`
+- LocalStack (S3, SQS, Secrets Manager, Translate) on `localhost:4566`
+- Spring Boot app on `localhost:8080`
+
+### 2. Verify health
 
 ```bash
-docker build -t translator-app .
-docker run -p 8080:8080 translator-app
+curl localhost:8080/actuator/health
+# Expected: {"status":"UP", ...}
 ```
 
-## Keyboard Shortcuts
+### 3. API Documentation
 
-| Shortcut         | Action                     |
-|------------------|----------------------------|
-| `Ctrl+Enter`     | Translate immediately      |
-| `Esc`            | Clear input and output     |
-| `Ctrl+Shift+C`   | Copy translation           |
-| `Ctrl+Shift+S`   | Share translation           |
+Swagger UI: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
-## API Reference
+---
 
-### `POST /translate`
+## API Quick Reference
 
-Translate text to a target language.
+### Authentication
 
-**Request:**
-```json
-{
-  "text": "Hello, how are you?",
-  "lang": "fr"
-}
+```bash
+# Register
+curl -X POST localhost:8080/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"password123"}'
+
+# Login → get access + refresh tokens
+curl -X POST localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"password123"}'
 ```
 
-**Response:**
-```json
-{
-  "translatedText": "Bonjour, comment allez-vous?",
-  "pronunciation": "bon-zhoor, koh-mahn tah-lay voo",
-  "detectedSourceLang": "auto"
-}
+### Translation
+
+```bash
+curl -X POST localhost:8080/api/v1/translations \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"sourceText":"Hello, how are you?","targetLanguage":"hi","sourceLanguage":"auto"}'
 ```
 
-**Supported language codes:** `fr`, `es`, `de`, `hi`, `ja`, `zh`, `it`, `te`
+### History
 
-### `GET /health`
+```bash
+# Paginated history
+curl "localhost:8080/api/v1/history?page=0&size=20" \
+  -H "Authorization: Bearer <access_token>"
 
-Returns service status for monitoring.
+# Filtered history
+curl "localhost:8080/api/v1/history?targetLanguage=hi&favoritesOnly=true" \
+  -H "Authorization: Bearer <access_token>"
 
-```json
-{ "status": "UP", "service": "translator-app" }
+# Stats
+curl localhost:8080/api/v1/history/stats \
+  -H "Authorization: Bearer <access_token>"
 ```
 
-## Configuration
+### Bulk Translation
 
-Edit `src/main/resources/config.properties`:
-
-```properties
-server.port=8080
-translation.max.length=5000
+```bash
+curl -X POST localhost:8080/api/v1/translations/bulk \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '["Hello","World","How are you?"]'
+# Returns: {"jobId": "<uuid>"}
 ```
 
-The server also respects the `PORT` environment variable (useful for Docker/Cloud).
+---
 
-## Project Structure
+## Make Targets
 
-```
-src/main/
-├── java/com/example/translator/
-│   ├── WebServer.java          # Jetty server bootstrap + config
-│   ├── TranslateServlet.java   # Translation API endpoint
-│   ├── Translator.java         # Translation engine (multi-provider fallback)
-│   ├── HealthServlet.java      # Health check endpoint
-│   └── Main.java               # CLI translation tool
-└── resources/
-    ├── config.properties       # Server configuration
-    ├── logback.xml             # Logging configuration
-    └── webapp/
-        ├── index.html          # Main translator UI (shortcuts, progress bar, share)
-        ├── history.html        # History page (export/import, favorites, stats)
-        ├── about.html          # About page (with theme toggle)
-        ├── style.css           # Complete stylesheet (gradient nav, glow, animations, dark mode)
-        ├── translator.js       # Core translation logic + keyboard shortcuts + share
-        ├── api.js              # HTTP client for /translate API
-        ├── utils.js            # Utility functions (debounce, speech, storage, download)
-        └── history.js          # History page logic (favorites, export/import, stats)
+```bash
+make up        # Start all Docker services
+make down      # Stop and remove containers
+make logs      # Tail app logs
+make test      # Run full test suite (Testcontainers)
+make coverage  # Generate JaCoCo HTML report
+make migrate   # Run Flyway migrations against local Postgres
+make build     # Build Docker image locally
+make clean     # Destroy Docker volumes (caution: data loss)
 ```
 
-## Architecture Highlights
+---
 
-- **Multi-provider fallback chain** — If Google's unofficial endpoint fails, falls back to LibreTranslate instances, then MyMemory. Ensures high availability.
-- **Custom romanization engine** — Hand-crafted character maps for Japanese Hiragana/Katakana, Hindi Devanagari, and Telugu scripts with proper virama/halant handling.
-- **Zero-dependency frontend** — No React, no jQuery, no build tools. Pure ES Modules for fast load times and easy deployment.
-- **Progressive enhancement** — Web Share API used when available, clipboard fallback otherwise. Animations respect `prefers-reduced-motion`.
-- **Production logging** — Structured SLF4J logging replaces all `System.out.println` calls. Configurable per-package log levels via `logback.xml`.
-- **Security** — Input validation, character limits, language code whitelist, CORS headers, and non-root Docker user.
+## Design Decisions
 
-## Autonomous Builder Automation
+| Decision | Rationale |
+|---|---|
+| **PostgreSQL** | ACID compliance, JSONB support for translation metadata, excellent Spring Data JPA integration |
+| **Redis** | Fast token blacklisting for JWT logout, L2 cache with 24hr TTL for translation results |
+| **ECS Fargate** | No infrastructure management, pay-per-use, native ECR integration, easy blue-green deploy |
+| **RS256 JWT** | Asymmetric signing — public key can be distributed for verification without exposing the private key |
+| **Caffeine L1** | Sub-millisecond in-memory cache for hot translations within a single pod |
+| **Resilience4j** | Circuit breaker prevents cascade failure when AWS Translate degrades; retry with backoff handles transient errors |
+| **SQS for bulk** | Decouples bulk submission from processing; provides durability via DLQ; scales independently |
+| **S3 pre-signed URLs** | Export files served directly from S3, not through the application — avoids server-side streaming overhead |
 
-This repository includes local automation scripts.
+---
 
-### Local Automation Scripts
+## AWS Architecture (Production)
 
-- `scripts/autocommit-if-green.ps1`
-  - Pulls latest changes on `main`
-  - Runs `mvn clean verify -DskipTests=false -B`
-  - Commits and pushes only when changes exist and validation passes
+- **VPC**: Multi-AZ (3 AZs), public subnets for ALB, private subnets for ECS/RDS/Redis
+- **ALB**: Application Load Balancer with health check on `/actuator/health`
+- **ECS Fargate**: 2+ tasks in prod, `desired_count` autoscaling
+- **RDS PostgreSQL**: Multi-AZ, encrypted at rest, deletion protection enabled
+- **ElastiCache**: Multi-node Redis cluster in private subnets
+- **Secrets**: RSA JWT private key + DB password stored in AWS Secrets Manager
 
-- `scripts/register-autobuilder-tasks.ps1`
-  - Installs a Startup-folder launcher so automation runs at user logon
-  - Registers a daily scheduled task (`WebBasedTranslator-AutoCommit-Daily`)
+---
 
-Run once to (re)register automation:
+## CI/CD Overview
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\register-autobuilder-tasks.ps1
-```
-
-### GitHub Actions Daily Schedule
-
-The workflow `.github/workflows/ci.yml` now supports:
-- Daily scheduled run (`cron: 0 7 * * *`)
-- Manual trigger (`workflow_dispatch`)
-- Auto-commit on schedule/manual runs only when validated changes exist
-
-## What's New in v2.0
-
-- ✨ Gradient navigation bar with animated styling
-- ⌨️ Keyboard shortcuts (Ctrl+Enter, Esc, Ctrl+Shift+C, Ctrl+Shift+S)
-- 📊 Live word count and estimated reading time
-- 🔗 Share translations via Web Share API
-- 📤 Export/Import translation history as JSON
-- ⭐ Favorite/star translations in history
-- 📊 History statistics (total, favorites, filtered)
-- 🎨 Card glow effects on focus
-- ✨ Button micro-animations (shine, scale, rotate)
-- 📏 Inline progress bar during translation
-- ⚠️ Character count warning (yellow at 80%, red at 95%)
-- 🌙 Dark mode toggle on ALL pages (including About)
-- 🦶 Site-wide footer with navigation
-- 🎬 Smooth fade-in-up page transitions
-- ♿ Enhanced keyboard accessibility
-
-## License
-
-MIT
+| Trigger | Workflow | Action |
+|---|---|---|
+| Pull Request | `ci.yml` | Test + Coverage + SonarCloud |
+| Merge to `main` | `deploy-dev.yml` | CI + ECR push + rolling ECS deploy + smoke test |
+| Push tag `v*.*.*` | `deploy-prod.yml` | Manual approval + ECR push + blue-green + auto-rollback |
