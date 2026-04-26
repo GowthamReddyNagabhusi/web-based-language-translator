@@ -3,6 +3,12 @@ package com.translator.presentation.rest;
 import com.translator.translation.dto.HistoryStatsDTO;
 import com.translator.translation.model.Translation;
 import com.translator.translation.repository.TranslationRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +26,8 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/history")
+@Tag(name = "History", description = "Browse, filter, favourite, and manage translation history")
+@SecurityRequirement(name = "bearerAuth")
 public class HistoryController {
 
     private final TranslationRepository translationRepository;
@@ -29,10 +37,20 @@ public class HistoryController {
     }
 
     @GetMapping
+    @Operation(summary = "Get translation history",
+               description = "Paginated list of the authenticated user's translations. " +
+                       "Can be filtered by target language, full-text search, or favourites-only.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Page of translations"),
+        @ApiResponse(responseCode = "401", description = "Not authenticated")
+    })
     public ResponseEntity<Page<Translation>> getHistory(
             @AuthenticationPrincipal UUID userId,
+            @Parameter(description = "Filter by target language code, e.g. 'hi'")
             @RequestParam(required = false) String targetLanguage,
+            @Parameter(description = "Full-text search on source text")
             @RequestParam(required = false) String search,
+            @Parameter(description = "Return only favourited translations")
             @RequestParam(required = false, defaultValue = "false") boolean favoritesOnly,
             Pageable pageable) {
 
@@ -51,46 +69,65 @@ public class HistoryController {
     }
 
     @GetMapping("/stats")
+    @Operation(summary = "Translation stats", description = "Aggregate stats for the authenticated user's history")
+    @ApiResponse(responseCode = "200", description = "Stats returned successfully")
     public ResponseEntity<HistoryStatsDTO> getStats(@AuthenticationPrincipal UUID userId) {
         long total = translationRepository.countByUserId(userId);
         long favorites = translationRepository.countByUserIdAndIsFavoriteTrue(userId);
         long thisWeek = translationRepository.countByUserIdAndCreatedAtAfter(userId, OffsetDateTime.now().minusDays(7));
-        
+
         return ResponseEntity.ok(HistoryStatsDTO.builder()
                 .totalTranslations(total)
                 .favoriteCount(favorites)
                 .translationsThisWeek(thisWeek)
-                .mostUsedLanguage(null) // omitted for brevity without aggregation query
-                .cacheHitRate(0.0) // omitted for brevity
+                .mostUsedLanguage(null)
+                .cacheHitRate(0.0)
                 .build());
     }
 
     @PatchMapping("/{id}/favorite")
-    public ResponseEntity<Void> toggleFavorite(@PathVariable UUID id, @AuthenticationPrincipal UUID userId) {
+    @Operation(summary = "Toggle favourite", description = "Toggles the favourite flag on a translation record")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Toggled successfully"),
+        @ApiResponse(responseCode = "403", description = "Translation belongs to another user"),
+        @ApiResponse(responseCode = "404", description = "Translation not found")
+    })
+    public ResponseEntity<Void> toggleFavorite(
+            @Parameter(description = "UUID of the translation")
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UUID userId) {
+
         Translation translation = translationRepository.findById(id).orElseThrow();
         if (!translation.getUser().getId().equals(userId)) {
             return ResponseEntity.status(403).build();
         }
-        
         translation.setFavorite(!translation.isFavorite());
         translationRepository.save(translation);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTranslation(@PathVariable UUID id, @AuthenticationPrincipal UUID userId) {
+    @Operation(summary = "Delete a translation", description = "Permanently deletes a single translation record")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Deleted"),
+        @ApiResponse(responseCode = "403", description = "Not your record")
+    })
+    public ResponseEntity<Void> deleteTranslation(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UUID userId) {
+
         Translation translation = translationRepository.findById(id).orElseThrow();
         if (!translation.getUser().getId().equals(userId)) {
             return ResponseEntity.status(403).build();
         }
-        
         translationRepository.delete(translation);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping
+    @Operation(summary = "Delete all history", description = "Permanently deletes all translations for the authenticated user")
+    @ApiResponse(responseCode = "204", description = "All history deleted")
     public ResponseEntity<Void> deleteAllHistory(@AuthenticationPrincipal UUID userId) {
-        // Technically normally done via bulk query or service
         Page<Translation> page = translationRepository.findByUserIdOrderByCreatedAtDesc(userId, Pageable.unpaged());
         translationRepository.deleteAllInBatch(page.getContent());
         return ResponseEntity.noContent().build();
