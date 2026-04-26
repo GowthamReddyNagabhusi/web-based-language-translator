@@ -4,6 +4,7 @@ import com.translator.translation.model.Translation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
@@ -25,4 +26,9 @@ public interface TranslationRepository extends JpaRepository<Translation, UUID> 
     long countByUserIdAndIsFavoriteTrue(UUID userId);
 
     long countByUserIdAndCreatedAtAfter(UUID userId, OffsetDateTime date);
+
+    long countByCreatedAtAfter(OffsetDateTime date);
+
+    @Query("SELECT t.targetLanguage FROM Translation t WHERE t.user.id = :userId GROUP BY t.targetLanguage ORDER BY COUNT(t) DESC")
+    java.util.List<String> findMostUsedLanguagesByUserId(UUID userId, Pageable pageable);
 }

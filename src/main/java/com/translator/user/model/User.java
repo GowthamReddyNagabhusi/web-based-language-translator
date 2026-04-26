@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UpdateTimestamp;
 import lombok.ToString;
 
 import java.time.OffsetDateTime;
@@ -45,13 +46,16 @@ public class User {
     @Builder.Default
     private boolean isActive = true;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @Column(name = "updated_at")
     @Builder.Default
     private OffsetDateTime updatedAt = OffsetDateTime.now();
+
+    public void setActive(boolean active) { this.isActive = active; }
+    public void setUpdatedAt(OffsetDateTime updatedAt) { this.updatedAt = updatedAt; }
     
     // Optimistic / convenience presist actions if desired...
 }
