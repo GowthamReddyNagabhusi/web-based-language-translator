@@ -1,5 +1,7 @@
 version: '3.8'
+
 services:
+
   postgres:
     image: postgres:16-alpine
     container_name: translator-postgres
@@ -15,7 +17,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U translator_user -d translator_db"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -29,21 +31,60 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 10
 
   localstack:
     image: localstack/localstack:3
     container_name: translator-localstack
     ports:
-      - "4566:4566"            # LocalStack Gateway
+      - "4566:4566"
     environment:
-      - SERVICES=sqs,s3,secretsmanager,translate
-      - DEBUG=1
-      - DOCKER_HOST=unix:///var/run/docker.sock
-      - AWS_DEFAULT_REGION=us-east-1
+      SERVICES: sqs,s3,secretsmanager,translate
+      DEBUG: "0"
+      AWS_DEFAULT_REGION: us-east-1
+      DOCKER_HOST: unix:///var/run/docker.sock
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: translator-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/translator_db
+      SPRING_DATASOURCE_USERNAME: translator_user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATA_REDIS_HOST: redis
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_REGION: us-east-1
+      AWS_ENDPOINT: http://localstack:4566
+      AWS_CREDENTIALS_ACCESS_KEY: test
+      AWS_CREDENTIALS_SECRET_KEY: test
+      JWT_SECRET_KEY_ID: local-dev-jwt-key
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
 
 volumes:
   postgres_data:

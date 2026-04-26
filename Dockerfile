@@ -1,38 +1,46 @@
-# ---- Build Stage ----
-FROM maven:3.9-eclipse-temurin-17-alpine AS build
-WORKDIR /app
+# ─────────────────────────────────────────────────────────────
+# Stage 1: Build
+# ─────────────────────────────────────────────────────────────
+FROM maven:3.9-eclipse-temurin-17 AS builder
 
-# Cache dependencies separately for faster rebuilds
+WORKDIR /build
+
+# Copy only dependency manifests first to leverage layer caching
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
+RUN mvn dependency:go-offline -q
 
+# Copy source and build the uber-jar, skipping tests (tests run in CI)
 COPY src ./src
-RUN mvn clean package -B
+RUN mvn clean package -DskipTests -q
 
-# ---- Runtime Stage ----
-FROM eclipse-temurin:17-jre-alpine
+# ─────────────────────────────────────────────────────────────
+# Stage 2: Runtime
+# ─────────────────────────────────────────────────────────────
+FROM eclipse-temurin:17-jre-alpine AS runtime
+
+# Security: run as non-root user (uid 1001)
+RUN addgroup -S appgroup && adduser -S -G appgroup -u 1001 appuser
+
 WORKDIR /app
 
-# Non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+# Copy the built fat jar from Stage 1
+COPY --from=builder /build/target/*.jar app.jar
 
-# Install curl for healthcheck (more reliable than wget)
-RUN apk add --no-cache curl
+# Fix ownership
+RUN chown appuser:appgroup app.jar
 
 USER appuser
 
-COPY --from=build /app/target/translator-app-2.0.0.jar app.jar
-
 EXPOSE 8080
-ENV PORT=8080
 
-# Health check uses /health, readiness uses /ready
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD curl -sf http://localhost:8080/health || exit 1
+# JVM tuning: container-aware memory + reasonable defaults
+ENV JAVA_OPTS="-XX:+UseContainerSupport \
+               -XX:MaxRAMPercentage=75.0 \
+               -XX:+UseG1GC \
+               -Djava.security.egd=file:/dev/./urandom \
+               -Dspring.profiles.active=dev"
 
-ENTRYPOINT ["java", \
-  "-XX:+UseG1GC", \
-  "-XX:MaxRAMPercentage=75.0", \
-  "-XX:+ExitOnOutOfMemoryError", \
-  "-Djava.security.egd=file:/dev/./urandom", \
-  "-jar", "app.jar"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
+  CMD wget -qO- http://localhost:8080/actuator/health || exit 1
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
