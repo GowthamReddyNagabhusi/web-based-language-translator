@@ -1,0 +1,78 @@
+spring:
+  application:
+    name: translator-app
+  profiles:
+    active: default
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/translator_db
+    username: translator_user
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+aws:
+  region: us-east-1
+  credentials:
+    access-key: test
+    secret-key: test
+  endpoint: http://localhost:4566 # LocalStack
+  s3:
+    export-bucket: translator-exports-local
+  sqs:
+    bulk-queue-name: bulk-translations-queue-local
+
+jwt:
+  # Using application config for local dev (private key in base64 or hardcoded path)
+  # For prod, this will be fetched from Secrets Manager
+  secret-key-id: "local-dev-jwt-key"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,metrics,info,loggers,prometheus"
+  endpoint:
+    health:
+      show-details: always
+  health:
+    defaults:
+      enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      translationService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+  retry:
+    instances:
+      translationService:
+        maxAttempts: 3
+        waitDuration: 500ms
+        exponentialBackoffMultiplier: 2.0
+
+spring:
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=10m

@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+
+aws:
+  region: ${AWS_REGION}
+  # No mock endpoint for prod, use real AWS endpoints
+  endpoint: ""
+  s3:
+    export-bucket: ${S3_EXPORT_BUCKET}
+  sqs:
+    bulk-queue-name: ${SQS_BULK_QUEUE_NAME}
+
+logging:
+  level:
+    com.translator: INFO
+    org.springframework.web: INFO
