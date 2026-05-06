@@ -38,6 +38,7 @@ public class Translation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private User user;
 
     @Column(name = "source_text", nullable = false, columnDefinition = "TEXT")

@@ -27,6 +27,10 @@ spring:
       host: localhost
       port: 6379
 
+  cache:
+    type: caffeine
+    # spec defined via CaffeineCacheConfig @Bean (see infrastructure/cache)
+
 aws:
   region: us-east-1
   credentials:
@@ -71,8 +75,4 @@ resilience4j:
         waitDuration: 500ms
         exponentialBackoffMultiplier: 2.0
 
-spring:
-  cache:
-    type: caffeine
-    caffeine:
-      spec: maximumSize=1000,expireAfterWrite=10m
+

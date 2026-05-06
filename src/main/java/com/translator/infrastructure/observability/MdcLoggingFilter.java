@@ -7,8 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.lang.NonNull;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -47,12 +45,7 @@ public class MdcLoggingFilter extends OncePerRequestFilter {
         response.setHeader(TRACE_HEADER, traceId);
 
         try {
-            // Attempt to populate userId — may be null before JwtAuthFilter runs,
-            // so we update it after the filter chain if needed.
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null && auth.getPrincipal() instanceof UUID uid) {
-                MDC.put("userId", uid.toString());
-            }
+            // userId MDC is populated inside JwtAuthFilter after token validation (H7 fix)
             filterChain.doFilter(request, response);
         } finally {
             MDC.clear();

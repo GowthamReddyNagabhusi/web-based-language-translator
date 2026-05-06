@@ -1,16 +1,40 @@
+# ─── Maven build output ──────────────────────────────────────────────────────
 target/
 *.class
-*.log
 *.war
 *.ear
-# IDE files
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+logs.txt
+logs/
+
+# ─── Frontend dependencies & build ──────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ─── LocalStack volume (Docker-managed, not source code) ─────────────────────
+volume/
+
+# ─── Environment / secrets ───────────────────────────────────────────────────
+.env
+*.env
+apikey.txt
+
+# ─── IDE & editor ────────────────────────────────────────────────────────────
 .idea/
 *.iml
 .vscode/
-# OS files
+*.swp
+*.swo
+
+# ─── OS files ────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
-# Keys / env
-*.env
-apikey.txt
-# JAR files are included in distribution
+
+# ─── Terraform state (local) ─────────────────────────────────────────────────
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/.terraform.lock.hcl

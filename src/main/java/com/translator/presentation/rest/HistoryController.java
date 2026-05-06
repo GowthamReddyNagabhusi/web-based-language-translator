@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -76,11 +78,15 @@ public class HistoryController {
         long favorites = translationRepository.countByUserIdAndIsFavoriteTrue(userId);
         long thisWeek = translationRepository.countByUserIdAndCreatedAtAfter(userId, OffsetDateTime.now().minusDays(7));
 
+        // Fetch most-used language if any translations exist
+        String mostUsed = translationRepository.findMostUsedLanguagesByUserId(userId, Pageable.ofSize(1))
+                .stream().findFirst().orElse(null);
+
         return ResponseEntity.ok(HistoryStatsDTO.builder()
                 .totalTranslations(total)
                 .favoriteCount(favorites)
                 .translationsThisWeek(thisWeek)
-                .mostUsedLanguage(null)
+                .mostUsedLanguage(mostUsed)
                 .cacheHitRate(0.0)
                 .build());
     }
@@ -97,10 +103,14 @@ public class HistoryController {
             @PathVariable UUID id,
             @AuthenticationPrincipal UUID userId) {
 
-        Translation translation = translationRepository.findById(id).orElseThrow();
-        if (!translation.getUser().getId().equals(userId)) {
-            return ResponseEntity.status(403).build();
+        // H1 fix: use existsByIdAndUserId to avoid lazy-loading the User association
+        Translation translation = translationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Translation not found"));
+
+        if (!translationRepository.existsByIdAndUserId(id, userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+
         translation.setFavorite(!translation.isFavorite());
         translationRepository.save(translation);
         return ResponseEntity.ok().build();
@@ -110,16 +120,21 @@ public class HistoryController {
     @Operation(summary = "Delete a translation", description = "Permanently deletes a single translation record")
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Deleted"),
-        @ApiResponse(responseCode = "403", description = "Not your record")
+        @ApiResponse(responseCode = "403", description = "Not your record"),
+        @ApiResponse(responseCode = "404", description = "Translation not found")
     })
     public ResponseEntity<Void> deleteTranslation(
             @PathVariable UUID id,
             @AuthenticationPrincipal UUID userId) {
 
-        Translation translation = translationRepository.findById(id).orElseThrow();
-        if (!translation.getUser().getId().equals(userId)) {
-            return ResponseEntity.status(403).build();
+        // H1 fix: use existsByIdAndUserId to avoid lazy-loading the User association
+        Translation translation = translationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Translation not found"));
+
+        if (!translationRepository.existsByIdAndUserId(id, userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+
         translationRepository.delete(translation);
         return ResponseEntity.noContent().build();
     }
@@ -128,8 +143,10 @@ public class HistoryController {
     @Operation(summary = "Delete all history", description = "Permanently deletes all translations for the authenticated user")
     @ApiResponse(responseCode = "204", description = "All history deleted")
     public ResponseEntity<Void> deleteAllHistory(@AuthenticationPrincipal UUID userId) {
-        Page<Translation> page = translationRepository.findByUserIdOrderByCreatedAtDesc(userId, Pageable.unpaged());
-        translationRepository.deleteAllInBatch(page.getContent());
+        // L3 fix: single JPQL DELETE — no records loaded into memory
+        translationRepository.deleteAllByUserId(userId);
         return ResponseEntity.noContent().build();
     }
 }
+
+

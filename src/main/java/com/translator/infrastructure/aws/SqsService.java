@@ -37,14 +37,13 @@ public class SqsService {
 
         this.sqsClient = builder.build();
         
-        // This fails if queue doesn't exist during startup. For safety:
+        String tempQueueUrl;
         try {
-            this.queueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(bulkQueueName).build()).queueUrl();
+            tempQueueUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(bulkQueueName).build()).queueUrl();
         } catch (Exception e) {
-             // Let it be null and handle lazily or throw. Throwing for now to fail fast missing infrastructure.
-             // But actually for testing/localstack if it starts slowly it could be an issue, so we'll lazy eval.
-             this.queueUrl = "http://localhost:4566/000000000000/" + bulkQueueName; 
+             tempQueueUrl = "http://localhost:4566/000000000000/" + bulkQueueName; 
         }
+        this.queueUrl = tempQueueUrl;
     }
 
     public void sendMessage(String payload) {

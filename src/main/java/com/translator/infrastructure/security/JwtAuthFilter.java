@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -53,8 +54,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             );
             
             SecurityContextHolder.getContext().setAuthentication(authToken);
+            // Populate MDC here so userId is available for all downstream logging (H7 fix)
+            MDC.put("userId", userId.toString());
         }
-        
+
         filterChain.doFilter(request, response);
     }
 }
